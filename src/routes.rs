@@ -110,3 +110,31 @@ pub async fn get_conversation_by_id(
         Ok(res)
     }
 }
+
+#[get("/users/phone/{user_phone}")]
+pub async fn get_user_by_phone(
+    pool: web::Data<DbPool>,
+    phone: web::Path<String>,
+) -> Result<HttpResponse, Error> {
+    let user_phone = phone.to_string();
+    let user = web::block(move || {
+        let mut conn = pool.get()?;
+        db::find_user_by_phone(&mut conn, user_phone);
+    })
+    .await?
+    .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    if let Some(user) = user {
+        Ok(HttpResponse::Ok().json(user))
+    } else {
+        let res =  HttpResponse::NotFound().body(
+            json!({
+                "error": 404,
+                "message": format!("No user found with phone: {}", phone.to_string())
+            })
+            .to_string(),
+        );
+        Ok(res)
+    }
+}
+
