@@ -1,14 +1,14 @@
 use std::time::Instant;
-use actix::{*, fut::ok};
+use actix::*;
 use actix_files::NamedFile;
 use actix_web::{get,post,web, Error, HttpRequest,HttpResponse,Responder};
 use actix_web_actors::ws;
 use diesel::{
     prelude::*,
-    r2d2:{self, ConnectionError},
+    r2d2::{self, ConnectionManager},
 };
 use serde_json::json;
-use uuid::uuid;
+use uuid::Uuid;
 use crate::db;
 use crate::models;
 use crate::server;
@@ -43,7 +43,7 @@ pub async fn chat_server(
 
 // the rest-api
 
-#[psot("/users/create")]
+#[post("/users/create")]
 pub async fn create_user(
     pool: web::Data<DbPool>,
     form: web::Json<models::NewUser>,

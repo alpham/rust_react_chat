@@ -1,5 +1,6 @@
-#[macro_use(diesel)]
+#[macro_use]
 extern crate diesel;
+
 use actix::*;
 use actix_cors::Cors;
 use actix_files::Files;

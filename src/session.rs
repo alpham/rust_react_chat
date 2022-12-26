@@ -63,7 +63,7 @@ impl Actor for WsChatSession {
     }
     
     fn stopping(&mut self, ctx: &mut Self::Context) -> Running {
-        self.addr.do_send(server::Disconnect {id: sefl.id});
+        self.addr.do_send(server::Disconnect {id: self.id});
         Running::Stop
     }
 }
@@ -135,7 +135,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
                             message: input.value.join("")
                         };
                         let _ = db::insert_new_conversation(&mut conn, new_conversation);
-                        let msg = sedre_json::to_string(&chat_msg).unwrap();
+                        let msg = serde_json::to_string(&chat_msg).unwrap();
                         self.addr.do_send(server::ClientMessage {
                             id: self.id,
                             msg,
@@ -167,6 +167,6 @@ impl WsChatSession {
                 return;
             }
             ctx.ping(b"");
-        })
+        });
     }
 }
