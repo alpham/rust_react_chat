@@ -119,7 +119,7 @@ pub async fn get_user_by_phone(
     let user_phone = phone.to_string();
     let user = web::block(move || {
         let mut conn = pool.get()?;
-        db::find_user_by_phone(&mut conn, user_phone);
+        db::find_user_by_phone(&mut conn, user_phone)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
@@ -147,14 +147,14 @@ pub async fn get_rooms(
         db::get_all_rooms(&mut conn)
     })
     .await?
-    .map_error(actix_web::error::ErrorInternalServerError)?;
+    .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    if !room.is_empty() {
+    if !rooms.is_empty() {
         Ok(HttpResponse::Ok().json(rooms))
     } else {
         let res = HttpResponse::NotFound().body(
             json!({
-                "error":: 404,
+                "error": 404,
                 "message": "No rooms available at the moment.",
             })
             .to_string()

@@ -3,15 +3,15 @@ use diesel::prelude::*;
 use std::{
     collections::{HashMap,HashSet},
     time::SystemTime
-}
+};
 use uuid::Uuid;
-use carte::models::{
+use crate::models::{
     Conversation,
     NewConversation,
     Room,
     RoomResponse,
     User
-}
+};
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -19,6 +19,31 @@ fn iso_date() -> String {
     let now = SystemTime::now();
     let now: DateTime<Utc> = now.into();
     return now.to_rfc3339();
+}
+
+pub fn find_user_by_uid(conn: &mut SqliteConnection, uid: Uuid) -> Result<Option<User>, DbError> {
+    use crate::schema::users::dsl::*;
+
+    let user = users
+        .filter(id.eq(uid.to_string()))
+        .first::<User>(conn)
+        .optional()?;
+
+    Ok(user)
+}
+
+pub fn get_conversation_by_room_uid(
+    conn: &mut SqliteConnection,
+    uid: Uuid,
+) -> Result<Option<Vec<Conversation>>, DbError> {
+    use crate::schema::conversations;
+
+    let convo = conversations::table
+        .filter(conversations::room_id.eq(uid.to_string()))
+        .load(conn)
+        .optional()?;
+
+    Ok(convo)
 }
 
 pub fn find_user_by_phone(
